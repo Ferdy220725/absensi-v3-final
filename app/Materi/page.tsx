@@ -1,21 +1,199 @@
 "use client";
-import { useState } from "react";
 
-export default function MateriPage() {
-  const [folders, setFolders] = useState(["Materi Pemrograman", "Materi Desain"]);
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export default function Absensi() {
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [pesan, setPesan] = useState<string | null>(null); // State buat pesan peringatan
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setUser(data.user);
+    });
+  }, []);
+
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+  };
+
+  const handleHadir = async () => {
+    setLoading(true);
+    setPesan(null);
+    const emailUser = user?.email;
+    const npmUser = emailUser?.split('@')[0];
+    const namaClean = (user?.user_metadata?.full_name || 'Mahasiswa').replace(/[0-9]/g, '').trim(); 
+
+    // 1. CEK DULU: Apakah NPM ini sudah absen hari ini?
+    const { data: existingUser } = await supabase
+      .from('kehadiran')
+      .select('npm')
+      .eq('npm', npmUser)
+      .maybeSingle();
+
+    if (existingUser) {
+      // 2. KALAU SUDAH ADA: Kasih tulisan peringatan
+      setPesan("Presensimu telah sukses, tidak perlu absen lagi!");
+      setLoading(false);
+      return;
+    }
+
+    // 3. KALAU BELUM ADA: Baru jalankan insert
+    const { error } = await supabase
+      .from('kehadiran')
+      .insert([{ npm: npmUser, nama: namaClean, email: emailUser }])
+      .select();
+
+    if (error) {
+      setStatus('error'); 
+    } else {
+      setStatus('success');
+    }
+    setLoading(false);
+  };
+
+  if (status === 'success') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#064e3b', fontFamily: 'sans-serif', padding: '20px' }}>
+        <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ fontSize: '70px', marginBottom: '20px' }}>⭐</div>
+          <h1 style={{ color: '#34d399', fontSize: '2rem', fontWeight: '900' }}>PRESENSI BERHASIL</h1>
+          <p style={{ color: '#a7f3d0', marginTop: '10px' }}>Selamat Belajar, Pejuang Muda!</p>
+          <button onClick={() => setStatus('idle')} style={{ marginTop: '30px', padding: '12px 25px', borderRadius: '15px', background: '#34d399', color: '#064e3b', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>KEMBALI</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', padding: '20px', color: 'white', fontFamily: 'sans-serif' }}>
-      <button onClick={() => window.location.href='/'} style={{ color: '#94a3b8', background: 'none', border: 'none', marginBottom: '20px', cursor: 'pointer' }}>← Kembali</button>
-      <h2 style={{ color: '#a855f7' }}>KUMPULAN MATERI</h2>
-      <button onClick={() => { const n = prompt("Nama Folder:"); if(n) setFolders([...folders, n]) }} style={{ background: '#a855f7', border: 'none', color: 'white', padding: '10px', borderRadius: '10px', marginBottom: '20px', width: '100%', fontWeight: 'bold' }}>+ BUAT FOLDER BARU</button>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-        {folders.map((f, i) => (
-          <div key={i} style={{ background: '#1e293b', padding: '20px', borderRadius: '15px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontSize: '40px' }}>📂</div>
-            <p style={{ fontSize: '12px', marginTop: '10px' }}>{f}</p>
-          </div>
-        ))}
+    <div style={{ 
+      minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+      background: '#0a0f1e', fontFamily: 'sans-serif', padding: '20px', position: 'relative'
+    }}>
+      
+      {/* Background Glow */}
+      <div style={{ position: 'absolute', top: '5%', left: '5%', width: '350px', height: '350px', background: '#15803d', filter: 'blur(130px)', opacity: '0.35', borderRadius: '50%' }}></div>
+      <div style={{ position: 'absolute', bottom: '5%', right: '5%', width: '300px', height: '300px', background: '#1d4ed8', filter: 'blur(130px)', opacity: '0.25', borderRadius: '50%' }}></div>
+
+      <div style={{ zIndex: 10, width: '100%', maxWidth: '420px' }}>
+        
+        {/* Header Branding */}
+        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
+            <div style={{ color: '#4ade80', fontWeight: '800', letterSpacing: '2px', fontSize: '13px', textTransform: 'uppercase' }}>
+              UPN "VETERAN" JAWA TIMUR
+            </div>
+            <h1 style={{ color: 'white', fontSize: '32px', fontWeight: '900', margin: '8px 0', letterSpacing: '-1px' }}>
+              Sistem Presensi
+            </h1>
+            <div style={{ height: '3px', width: '40px', background: '#4ade80', margin: '15px auto', borderRadius: '10px' }}></div>
+        </div>
+
+        {/* Card Utama */}
+        <div style={{ 
+          background: 'rgba(23, 31, 48, 0.8)', 
+          backdropFilter: 'blur(25px)',
+          padding: '45px 35px', 
+          borderRadius: '35px', 
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.6)' 
+        }}>
+          
+          {!user ? (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: '#94a3b8', marginBottom: '35px', fontSize: '15px', lineHeight: '1.6' }}>
+                Silahkan login menggunakan email student untuk verifikasi kehadiran.
+              </p>
+              <button onClick={handleLogin} style={{ 
+                width: '100%', padding: '18px', background: 'white', color: '#0a0f1e', 
+                border: 'none', borderRadius: '20px', fontWeight: '800', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px'
+              }}>
+                <img src="https://www.google.com/favicon.ico" width="20" alt="G" />
+                Login Akun Google
+              </button>
+            </div>
+          ) : (
+            <div>
+              {/* Profile Section */}
+              <div style={{ marginBottom: '35px', textAlign: 'center' }}>
+                <div style={{ 
+                  width: '90px', height: '90px', 
+                  background: 'linear-gradient(135deg, #22c55e, #3b82f6)', 
+                  borderRadius: '30px', margin: '0 auto 20px', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  fontSize: '36px', transform: 'rotate(-5deg)',
+                  boxShadow: '0 15px 30px rgba(34, 197, 94, 0.2)',
+                  border: '2px solid rgba(255,255,255,0.1)'
+                }}>
+                  🎓
+                </div>
+                <div style={{ color: 'white', fontWeight: '800', fontSize: '20px', textTransform: 'uppercase' }}>
+                  {user.user_metadata?.full_name?.replace(/[0-9]/g, '').trim()}
+                </div>
+                <div style={{ color: '#4ade80', fontWeight: '700', fontSize: '15px', marginTop: '6px' }}>
+                  {user.email?.split('@')[0]}
+                </div>
+              </div>
+
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', marginBottom: '30px' }}></div>
+
+              {/* TULISAN PERINGATAN KALAU SUDAH ABSEN */}
+              {pesan && (
+                <div style={{ 
+                  backgroundColor: 'rgba(52, 211, 153, 0.1)', 
+                  border: '1px solid #34d399', 
+                  color: '#34d399', 
+                  padding: '12px', 
+                  borderRadius: '15px', 
+                  fontSize: '13px', 
+                  fontWeight: '700', 
+                  textAlign: 'center', 
+                  marginBottom: '20px',
+                  animation: 'fadeIn 0.5s ease'
+                }}>
+                  {pesan}
+                </div>
+              )}
+
+              <button onClick={handleHadir} disabled={loading} style={{ 
+                width: '100%', padding: '22px', 
+                background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)', 
+                color: 'white', border: 'none', borderRadius: '22px', 
+                fontSize: '16px', fontWeight: '900', cursor: 'pointer',
+                boxShadow: '0 12px 24px rgba(34, 197, 94, 0.4)', 
+                textTransform: 'uppercase', letterSpacing: '1.5px'
+              }}>
+                {loading ? 'MENGECEK...' : 'KONFIRMASI HADIR'}
+              </button>
+
+              <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} style={{ 
+                width: '100%', background: 'none', border: 'none', color: '#475569', 
+                marginTop: '25px', fontSize: '13px', cursor: 'pointer', fontWeight: '700'
+              }}>
+                Ganti Akun Mahasiswa
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer info */}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <div style={{ color: '#94a3b8', fontSize: '11px', fontWeight: '800', letterSpacing: '1.5px', opacity: 0.6 }}>
+                ADMIN PANEL V.2.1
+            </div>
+            <div style={{ color: '#ffffff', fontSize: '10px', marginTop: '5px', fontWeight: '500', opacity: 0.4, letterSpacing: '0.5px' }}>
+                Developed by Ahmat Choyrul Ferdyansyah
+            </div>
+        </div>
       </div>
     </div>
   );
