@@ -1,7 +1,7 @@
 "use client";
 export default function Dashboard() {
   const menus = [
-    { title: "ABSENSI MAHASISWA", desc: "Konfirmasi Kehadiran Kuliah", icon: "✅", color: "linear-gradient(135deg, #10b981, #059669)", link: "/absensi" },
+    { title: "ABSENSI MAHASISWA", desc: "Konfirmasi Kehadiran Kuliah", icon: "✅", color: "linear-gradient(135deg, #10b981, #059669)", link: "/" }, 
     { title: "PENGUMPULAN TUGAS", desc: "Upload Tugas PDF/Gambar", icon: "📁", color: "linear-gradient(135deg, #3b82f6, #2563eb)", link: "/tugas" },
     { title: "KUMPULAN MATERI", desc: "Simpan & Kelola File Materi", icon: "📚", color: "linear-gradient(135deg, #a855f7, #7c3aed)", link: "/materi" },
   ];
@@ -24,11 +24,7 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
-
-        <div style={{ marginTop: '100px', borderTop: '1px solid #1e293b', paddingTop: '20px' }}>
-          <p style={{ color: '#64748b', fontSize: '10px', letterSpacing: '2px' }}>SYSTEM V.3.2</p>
-          <p style={{ color: '#94a3b8', fontSize: '12px', marginTop: '10px' }}>Built by <span style={{ color: '#10b981', fontWeight: 'bold' }}>Ahmat Choyrul Ferdyansyah</span></p>
-        </div>
+        <p style={{ marginTop: '50px', color: '#94a3b8', fontSize: '12px' }}>by Ahmat Choyrul Ferdyansyah</p>
       </div>
     </div>
   );
