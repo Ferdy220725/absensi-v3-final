@@ -2,30 +2,22 @@
 import { useState } from "react";
 
 export default function MateriPage() {
-  const [folders, setFolders] = useState(["Materi Semester 1", "Referensi Jurnal"]);
-
-  const addFolder = () => {
-    const name = prompt("Nama Folder Baru:");
-    if (name) setFolders([...folders, name]);
-  };
+  const [folders, setFolders] = useState(["Materi Pemrograman", "Materi Desain"]);
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6">
-      <div className="max-w-md mx-auto">
-        <button onClick={() => window.location.href = '/'} className="text-gray-400 text-sm mb-6">← Kembali</button>
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-purple-400">My Materi</h1>
-          <button onClick={addFolder} className="bg-purple-600 px-4 py-2 rounded-lg text-sm font-bold">+ Folder</button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {folders.map((f, i) => (
-            <div key={i} className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 text-center flex flex-col items-center">
-              <span className="text-4xl mb-3">📂</span>
-              <p className="text-sm font-semibold truncate w-full">{f}</p>
-            </div>
-          ))}
-        </div>
+    <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', padding: '20px', color: 'white' }}>
+      <button onClick={() => window.location.href='/'} style={{ color: '#94a3b8', background: 'none', border: 'none', marginBottom: '20px' }}>← Kembali</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ color: '#a855f7', margin: '0' }}>MY MATERI</h2>
+        <button onClick={() => { const n = prompt("Nama Folder:"); if(n) setFolders([...folders, n]) }} style={{ background: '#a855f7', border: 'none', color: 'white', padding: '8px 15px', borderRadius: '10px', fontWeight: 'bold' }}>+ FOLDER</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+        {folders.map((f, i) => (
+          <div key={i} style={{ background: '#1e293b', padding: '20px', borderRadius: '15px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ fontSize: '40px' }}>📂</div>
+            <p style={{ fontSize: '12px', fontWeight: 'bold', marginTop: '10px' }}>{f}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
