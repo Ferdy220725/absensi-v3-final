@@ -1,4 +1,13 @@
-// app/layout.tsx
+import './globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'Student Hub UPN',
+  description: 'Created by Ahmat Choyrul Ferdyansyah',
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -6,7 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body> 
+      <body className={`${inter.className} bg-[#0f172a] text-white min-h-screen`}>
+        {children}
+      </body>
     </html>
   )
 }
