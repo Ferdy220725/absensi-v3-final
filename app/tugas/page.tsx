@@ -1,77 +1,44 @@
 "use client";
-import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-// Ini otomatis mengambil data dari file .env kamu
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function TugasPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [nama, setNama] = useState("");
-
-  const handleUpload = async () => {
-    if (!file || !nama) return alert("Isi nama dan pilih file dulu, Fer!");
-    setLoading(true);
-
-    try {
-      // 1. Upload file ke Storage Bucket 'tugas-mahasiswa'
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${nama}.${fileExt}`;
-      
-      const { data, error: uploadError } = await supabase.storage
-        .from('tugas-mahasiswa')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // 2. Ambil URL file yang baru diupload
-      const { data: { publicUrl } } = supabase.storage
-        .from('tugas-mahasiswa')
-        .getPublicUrl(fileName);
-
-      // 3. Simpan info ke database tabel pengumpulan_tugas
-      const { error: dbError } = await supabase
-        .from('pengumpulan_tugas')
-        .insert([{ nama_mahasiswa: nama, file_url: publicUrl }]);
-
-      if (dbError) throw dbError;
-
-      alert("GOKIL! Tugas " + nama + " berhasil terkirim!");
-      setFile(null);
-      setNama("");
-    } catch (error: any) {
-      alert("Waduh Error: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function Dashboard() {
+  const menus = [
+    { title: "Absensi Mahasiswa", desc: "Konfirmasi kehadiran kuliah", icon: "✅", color: "from-green-500 to-emerald-600", link: "/absensi" },
+    { title: "Pengumpulan Tugas", desc: "Upload tugas format PDF/Gambar", icon: "📁", color: "from-blue-500 to-indigo-600", link: "/tugas" },
+    { title: "Kumpulan Materi", desc: "Simpan & buat folder materimu", icon: "📚", color: "from-purple-500 to-pink-600", link: "/materi" },
+  ];
 
   return (
-    <div className="p-8 font-sans max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">Upload Tugas UPN</h1>
-      <div className="bg-white shadow-2xl border-t-4 border-blue-600 p-8 rounded-2xl">
-        <input 
-          type="text"
-          placeholder="Nama Lengkap Kamu"
-          value={nama}
-          onChange={(e) => setNama(e.target.value)}
-          className="w-full p-3 mb-4 border rounded-lg focus:outline-blue-500"
-        />
-        <input 
-          type="file" 
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="mb-6 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700"
-        />
-        <button 
-          onClick={handleUpload}
-          disabled={loading}
-          className={`w-full py-3 rounded-xl font-bold text-white transition-all ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 shadow-lg'}`}
-        >
-          {loading ? "Sabar, lagi ngirim..." : "KIRIM TUGAS SEKARANG"}
-        </button>
+    <div className="min-h-screen bg-[#0f172a] text-white p-6">
+      <div className="max-w-md mx-auto pt-10">
+        <div className="text-center mb-10">
+          <p className="text-green-400 font-bold text-xs tracking-[0.2em] uppercase">UPN "VETERAN" JATIM</p>
+          <h1 className="text-3xl font-black mt-2 tracking-tight">STUDENT HUB</h1>
+          <div className="h-1 w-12 bg-green-500 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        <div className="space-y-4">
+          {menus.map((item, i) => (
+            <button
+              key={i}
+              onClick={() => window.location.href = item.link}
+              className="w-full group relative overflow-hidden rounded-2xl bg-[#1e293b] p-1 transition-all hover:scale-[1.02] active:scale-95 border border-white/5"
+            >
+              <div className={`absolute inset-0 opacity-10 bg-gradient-to-r ${item.color}`}></div>
+              <div className="relative flex items-center p-5 space-x-4">
+                <div className={`text-3xl p-3 rounded-xl bg-gradient-to-br ${item.color} shadow-lg`}>
+                  {item.icon}
+                </div>
+                <div className="text-left">
+                  <h3 className="font-bold text-lg">{item.title}</h3>
+                  <p className="text-xs text-gray-400">{item.desc}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-center mt-20 text-gray-600 text-[10px] tracking-widest font-mono">
+          SYSTEM INTEGRATION V.3.0
+        </p>
       </div>
     </div>
   );
