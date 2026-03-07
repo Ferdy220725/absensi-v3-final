@@ -4,8 +4,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Student Hub UPN',
-  description: 'Created by Ahmat Choyrul Ferdyansyah',
+  title: 'Student Hub - Presensi',
+  description: 'Sistem Presensi Mahasiswa UPN Veteran Jatim',
 }
 
 export default function RootLayout({
@@ -15,9 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#0f172a] text-white min-h-screen`}>
-        {children}
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }
